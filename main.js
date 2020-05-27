@@ -1,30 +1,37 @@
-const { Client } = require('discord.js');
-const { TOKEN, PREFIX } = require('./config');
+const { Client, Collection } = require('discord.js');
+const { TOKEN } = require('./config');
 const Braking = new Client();
+const fs = require("fs");
 
-Braking.on('ready', () => {
-  console.log(`Logged in as ${Braking.user.tag}!`);
+Braking.afk = new Map();
+require("./util/function")(Braking);
+Braking.mongoose = require("./util/mongoose");
+Braking.commands = new Collection();
+
+fs.readdir("./events/", (err, files) => {
+    if (err) return console.error;
+    files.forEach(file => {
+      if (!file.endsWith(".js")) return;
+      const evt = require(`./events/${file}`);
+      const evtName = file.split(".")[0];
+      console.log(`Loaded event '${evtName}'`);
+      Braking.on(evtName, evt.bind(null, Braking));
+    });
 });
 
-Braking.on("message", msg => {
-    if(msg.author.bot) return;
-    const args = msg.content.split(/ +/g);
-    const cmd = args.shift();
-    if (cmd === `${PREFIX}ping`) msg.channel.send("Pong !");
-
+fs.readdir("./commands/", async (err, files) => {
+    if (err) return console.error;
+    files.forEach(file => {
+      if (!file.endsWith(".js")) return;
+      const props = require(`./commands/${file}`);
+      const cmdName = file.split(".")[0];
+      console.log(`Loaded command '${cmdName}'`);
+      Braking.commands.set(cmdName, props);
+    });
 });
 
-
-
-Braking.on('guildMemberAdd', member => {
-    const channel = member.guild.channels.cache.find(ch => ch.name === 'member-log');
-    if (!channel){
-        member.guild.owner.send(`:wave: ${member.guild.owner.displayName} ! :robot: Je n'arrive pas a fonctionner correctement, Voici donc le problème :point_down: !  \n **"Erreur: Salon de bienvenue introuvable !!"** :robot:`);
-        return;
-    }
-    channel.send(`Welcome to the server, ${member}`);
-  });
-
+Braking.mongoose.init();
 Braking.login(TOKEN);
 Braking.on("error", console.error);
 Braking.on("warn", console.warn);
+// Braking.on("debug", console.log);

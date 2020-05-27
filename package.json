@@ -7,7 +7,11 @@
   "author": "Ethweth",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "discordjs/discord.js"
+    "canvas": "^2.6.1",
+    "common-tags": "^1.8.0",
+    "discord.js": "discordjs/discord.js",
+    "mongoose": "^5.9.10",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
